@@ -1,2 +1,7 @@
+# vendor and built tmp files
 deps_src
 deps_compiled
+
+
+# editor
+.vscode
