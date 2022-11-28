@@ -6,7 +6,7 @@ Wasm port of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library to allow i
 The project is nowhere close to a production-ready build with a stable api.
 Yet, it is already able to compile with no major issue and run a demo!
 
-Check it here: [https://lucafabbian.github.io/hdt-wasm/dist/test1](https://lucafabbian.github.io/hdt-wasm/dist/test1)
+Check it here: [https://lucafabbian.github.io/hdt-wasm/dist/converter](https://lucafabbian.github.io/hdt-wasm/dist/converter)
 
 
 
@@ -26,7 +26,7 @@ Build with:
 ./build.sh
 
 # build demo
-bash scripts/test1_build.sh
+bash scripts/converter_build.sh
 
 ```
 

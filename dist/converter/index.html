@@ -11,33 +11,34 @@
 
 
   <h1>hdt-wasm demo</h1>
-  <p>This simple page will just parse a turtle file and display the resulting triples. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
+  <p>This simple page will just parse a turtle file and display the resulting triples (just the first 30 for performance reason), and let you download the resulting HDT file. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
   <p>If you do not have a turtle file at hand, download one from <a href="https://raw.githubusercontent.com/drobilla/serd/master/serd.ttl" download="serd.ttl" target="_blank">here</a>, then just load the file below:</p>
   <input type="file" id="mainfile" onchange="handleMainFile()">
 
   <h2>Parsed triples:</h2>
   <p id="output"></p>
-<script>
-  const outP = document.getElementById('output')
-
-  window.Module = {
-    print:(text) => {
-      outP.innerHTML  += `<p>${text}</p><hr>`
-      console.log(text)
-    }
-  }
-</script>
 
 <script src="./a.out.js"></script>
 <script>
 
-  Module.onRuntimeInitialized = async () => {
-    const api = {
-      version: Module.cwrap("testf2", "number", []),
-    };
-    //console.log(api.version());
-  };
+  const outP = document.getElementById('output')
+  window._HDTWasm = {
+    printHTML: (html) => outP.innerHTML += html,
 
+    downloadFile: (filePath, fileName) => {
+      console.log( "fileName: ", filePath );  
+      const shot =  Module.FS.readFile( filePath );
+      const link = document.createElement('a');
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      const blob = new Blob([shot]);
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      document.body.removeChild(link);
+
+    }
+  }
 
 
   window.handleMainFile  = () => {
@@ -51,13 +52,16 @@
       const data = new Uint8Array(fr.result);
 
       Module['FS_createDataFile']('/', 'test.ttl', data, true, true, true);
-      Module.ccall('ingestTurtle', null, [], null);
+      Module.ccall('convertTurtle', null, [], null);
 
+      console.log(Module)
       fileInput.value = '';
     };
     
     fr.readAsArrayBuffer(file);
   }
+
+
 </script>
 
 
