@@ -2,7 +2,7 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>hdt-wasm demo</title>
+  <title>hdt-wasm converter demo</title>
   <link rel="stylesheet" href="water.css">
 </head>
 <body>
@@ -10,8 +10,8 @@
   <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
 
 
-  <h1>hdt-wasm demo</h1>
-  <p>This simple page will just parse a turtle file and display the resulting triples (just the first 30 for performance reason), and let you download the resulting HDT file. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
+  <h1>hdt-wasm converter demo</h1>
+  <p>This simple page will just parse a turtle file, display the resulting triples (just the first 30 for performance reason), and let you download the resulting HDT file. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
   <p>If you do not have a turtle file at hand, download one from <a href="https://raw.githubusercontent.com/drobilla/serd/master/serd.ttl" download="serd.ttl" target="_blank">here</a>, then just load the file below:</p>
   <input type="file" id="mainfile" onchange="handleMainFile()">
 
@@ -54,7 +54,6 @@
       Module['FS_createDataFile']('/', 'test.ttl', data, true, true, true);
       Module.ccall('convertTurtle', null, [], null);
 
-      console.log(Module)
       fileInput.value = '';
     };
     
