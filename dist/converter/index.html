@@ -11,11 +11,10 @@
 
 
   <h1>hdt-wasm converter demo</h1>
-  <p>This simple page will just parse a turtle file, display the resulting triples (just the first 30 for performance reason), and let you download the resulting HDT file. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
+  <p>This simple page will just parse a turtle file, display the resulting triples, and let you download the resulting HDT file. Everything is done on your browser, thanks to the webassembly port of hdt-cpp.</p>
   <p>If you do not have a turtle file at hand, download one from <a href="https://raw.githubusercontent.com/drobilla/serd/master/serd.ttl" download="serd.ttl" target="_blank">here</a>, then just load the file below:</p>
   <input type="file" id="mainfile" onchange="handleMainFile()">
 
-  <h2>Parsed triples:</h2>
   <p id="output"></p>
 
 <script src="./a.out.js"></script>
@@ -50,11 +49,15 @@
     const fr = new FileReader();
     fr.onload = function () {
       const data = new Uint8Array(fr.result);
+      fileInput.style['disabled'] = true
+      fileInput.disabled = true
+      window._HDTWasm.printHTML('<h2>Parsing triples...</h2>')
+      setTimeout( () => {
+        Module['FS_createDataFile']('/', 'test.ttl', data, true, true, true);
+        Module.ccall('convertTurtle', null, [], null);
 
-      Module['FS_createDataFile']('/', 'test.ttl', data, true, true, true);
-      Module.ccall('convertTurtle', null, [], null);
+      })
 
-      fileInput.value = '';
     };
     
     fr.readAsArrayBuffer(file);

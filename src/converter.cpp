@@ -14,10 +14,10 @@ extern "C" EMSCRIPTEN_KEEPALIVE void convertTurtle() {
  
     // Read RDF into an HDT file.
     HDT *hdt = HDTManager::generateHDT(
-                     "test.ttl",   // Input file
+                     "test.ttl",     // Input file
                      "http://example.org/test", // Base URI
-                     NTRIPLES,         // Input Format
-                     spec              // Additional HDT Options
+                     TURTLE,         // Input Format
+                     spec            // Additional HDT Options
                    );
  
     // Enumerate all triples matching a pattern ("" means any)
@@ -33,7 +33,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void convertTurtle() {
     }
 
     if(i++ >= MAX_TRIPLES_PRINTED){
-        EM_ASM_({ window._HDTWasm.printHTML("<p>... and many more ...</p>") });
+        EM_ASM_({ window._HDTWasm.printHTML("<p>... and many more (check the console for a full log) ...</p>") });
     }
 
     EM_ASM_({ window._HDTWasm.printHTML("<br><br><p><b>Total triples:</b> " + $0 + "</p>") }, i);
@@ -43,14 +43,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE void convertTurtle() {
     EM_ASM_({ window._HDTWasm.printHTML("<button onclick=\"window._HDTWasm.downloadFile('/result.hdt', 'result.hdt')\">Download resulting hdt file</button>") });
 
 
-
-    printf("sizes %lu, %lu\n", sizeof(size_t), sizeof(uint64_t));
-
-    delete it; // Remember to delete iterator to avoid memory leaks!
- 
+    delete it; // Remember to delete iterator to avoid memory leaks! 
     delete hdt;
-
-
 }
 
 
