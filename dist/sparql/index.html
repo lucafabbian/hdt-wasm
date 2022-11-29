@@ -4,6 +4,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>hdt-wasm sparql demo</title>
   <link rel="stylesheet" href="water.css">
+
+  <link rel="stylesheet" href="codemirror5/codemirror.css">
+  <style>.CodeMirror{max-height: 200px;}</style>
 </head>
 <body>
   <a href="https://github.com/lucafabbian/hdt-wasm" target="_blank" rel="noopener" class="github-corner" aria-label="View my GitHub account"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:var(--color); color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
@@ -11,13 +14,26 @@
 
 
   <h1>hdt-wasm sparql demo</h1>
-  <p>This simple page will let you use sparql on a predefined hdt file taken from <a href="">here</a>.</p>
+  <p>This simple page will let you use sparql on a predefined hdt file about museums taken from <a href="./padovagrandtour.hdt">here</a>.</p>
+  <p>Keep in mind that query-engine supports just a subset of sparql properly. For example, the BIND operator does not works as expected.</p>
+  <button onclick="executeQuery()">Execute query</button>
+  <textarea id="codeEditor">
+PREFIX pgt: <https://padovagrandtour.github.io/entities#> 
+PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
 
-  <h2>Query result:</h2>
+SELECT ?artwork ?site ?lat ?long
+WHERE {
+  ?artwork a pgt:Artwork .
+  ?artwork pgt:hasSite ?site.
+  ?site geo:lat ?lat;
+        geo:long ?long.
+} LIMIT 20
+</textarea>
+  <h2>Query results:</h2>
   <p id="output"></p>
-  <button onclick="window._HDTWasm.downloadFile('/file.hdt', 'file.hdt')">Download HDT file</button>
 
-
+<script src="codemirror5/codemirror.js"></script>
+<script src="codemirror5/sparql.js"></script>
 <script src="./sparqlEngine.js"></script>
 <script src="./a.out.js"></script>
 <script>
@@ -41,12 +57,19 @@
     }
   }
 
+  const codeEditor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+    lineNumbers: true,
+    mode:  "sparql"
+  });
+
+
 
   const { HashMapDataset, Graph, PlanBuilder } = sparqlEngine
 
   window.queryMatches = []
 
-  const executeQuery = () => {
+  window.executeQuery = () => {
+    outP.innerHTML = ""
 
     const formatTripleValue = tVal => tVal.startsWith('?') ? '' : tVal
     class HDTGraph extends Graph {
@@ -58,7 +81,7 @@
         const { subject, predicate, object } = triple
         window.queryMatches = []
 
-        Module.ccall('loadHDT', null, ['string', 'string', 'string'], [
+        Module.ccall('search', null, ['string', 'string', 'string'], [
           formatTripleValue(subject), formatTripleValue(predicate), formatTripleValue(object)
         ]);
 
@@ -72,32 +95,76 @@
     const graph = new HDTGraph()
     const dataset = new HashMapDataset('http://example.org#default', graph)
 
+    const queryA = `
+    PREFIX ofn: <http://www.ontotext.com/sparql/functions/>
+    PREFIX owl: <http://www.w3.org/2002/07/owl#> 
+    PREFIX pgt: <https://padovagrandtour.github.io/entities#> 
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+    PREFIX xml: <http://www.w3.org/XML/1998/namespace> 
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+    PREFIX sdo: <https://schema.org/>
+    PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 
-    const query = `
+
+    SELECT DISTINCT ?author ?artworkName ?height WHERE { 
+    ?artwork a pgt:Artwork; 
+             sdo:author ?author; 
+             pgt:height ?height. 
+    FILTER (?height=?maxHeight && ?author = ?Innerauthor) 
+    { 
+ 
+        SELECT ?Innerauthor (MAX(?height) AS ?maxHeight) WHERE { 
+                ?artwork a pgt:Artwork; 
+                        sdo:author ?Innerauthor;  
+                        pgt:height ?height. 
+        }  
+        GROUP BY (?Innerauthor) 
+    } 
+} ORDER BY DESC(?height)
+
+    `
+
+    const queryB = `
     PREFIX pgt: <https://padovagrandtour.github.io/entities#>
     select * where { 
-      pgt:ARTWORK204 a ?o .
+      BIND(pgt:SITE0 AS ?o)
+      ?s ?p ?o .
     } `
     
-    const query2 = `
-      PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-      SELECT ?s ?name
-      WHERE {
-        ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?name .
-      }`
+    const query = codeEditor.getValue()
 
     // Creates a plan builder for the RDF dataset
     const builder = new PlanBuilder(dataset)
 
     // Get an iterator to evaluate the query
     const iterator = builder.build(query)
-
+    const MAX_LIMIT = 30
+    let printedResults = 0
     // Read results
     iterator.subscribe(bindings => {
-      document.getElementById('output').innerText += JSON.stringify(bindings.toObject(), null, 2)
+      const result = bindings.toObject()
+      for ([label, value] of Object.entries(result)){
+        console.log(label, value)
+        if(printedResults < MAX_LIMIT){
+          document.getElementById('output').innerHTML += `<b>${label}</b> ${value.replaceAll('<','&lt;').replaceAll('>', '&gt;')}<br>`  
+        }
+      }
+      console.log('-----')
+      printedResults++;
+
+      if(printedResults < MAX_LIMIT){
+        document.getElementById('output').innerHTML += `<hr>`
+      }
+      
     }, err => {
       console.error('error', err)
     }, () => {
+      document.getElementById('output').innerHTML += `<p>Number of results: ${printedResults}</p>`
+      if(printedResults > MAX_LIMIT){
+        document.getElementById('output').innerHTML += `<p>Showing the first ${MAX_LIMIT}. Check the console for the full results.</p>`
+      }
+      document.getElementById('output').innerHTML += '<p>Done!</p>'
       console.log('Query evaluation complete!')
     })
 
@@ -108,7 +175,7 @@
     .then( buffer => {
       const data = new Uint8Array(buffer)
       Module['FS_createDataFile']('/', 'file.hdt', data, true, true, true);
-      executeQuery()
+      Module.ccall('loadHDT', null, [], null)
     })
 
 
@@ -116,115 +183,3 @@
 
 
 </body>
-<!--
-<p id="out">
-  Found solutions: <br><br>
-</p>
-
-<script src="./N3.js"></script>
-<script src="./sparqlEngine.js"></script>
-<script>
-
-'use strict'
-
-const { Parser, Store } = N3
-const { HashMapDataset, Graph, PlanBuilder } = sparqlEngine
-
-// Format a triple pattern according to N3 API:
-// SPARQL variables must be replaced by `null` values
-function formatTriplePattern (triple) {
-  let subject = null
-  let predicate = null
-  let object = null
-
-  console.log('triple', triple)
-  if (!triple.subject.startsWith('?')) {
-    subject = triple.subject
-  }
-  if (!triple.predicate.startsWith('?')) {
-    predicate = triple.predicate
-  }
-  if (!triple.object.startsWith('?')) {
-    object = triple.object
-  }
-  return { subject, predicate, object }
-}
-
-class N3Graph extends Graph {
-  constructor () {
-    super()
-    this._store = Store()
-  }
-
-  insert (triple) {
-    return new Promise((resolve, reject) => {
-      try {
-        this._store.addTriple(triple.subject, triple.predicate, triple.object)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    })
-  }
-
-  delete (triple) {
-    return new Promise((resolve, reject) => {
-      try {
-        this._store.removeTriple(triple.subject, triple.predicate, triple.object)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    })
-  }
-
-  find (triple) {
-    const { subject, predicate, object } = formatTriplePattern(triple)
-    return this._store.getTriples(subject, predicate, object)
-  }
-
-  estimateCardinality (triple) {
-    const { subject, predicate, object } = formatTriplePattern(triple)
-    return Promise.resolve(this._store.countTriples(subject, predicate, object))
-  }
-}
-
-const graph = new N3Graph()
-const dataset = new HashMapDataset('http://example.org#default', graph)
-
-// Load some RDF data into the graph
-const parser = new Parser()
-parser.parse(`
-  @prefix foaf: <http://xmlns.com/foaf/0.1/> .
-  @prefix : <http://example.org#> .
-  :a foaf:name "a" .
-  :b foaf:name "b" .
-`).forEach(t => {
-  graph._store.addTriple(t)
-})
-
-const query = `
-  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-  SELECT ?name
-  WHERE {
-    ?s foaf:name ?name .
-  }`
-
-// Creates a plan builder for the RDF dataset
-const builder = new PlanBuilder(dataset)
-
-// Get an iterator to evaluate the query
-const iterator = builder.build(query)
-
-// Read results
-iterator.subscribe(bindings => {
-  document.getElementById('out').innerText += JSON.stringify(bindings.toObject(), null, 2)
-}, err => {
-  console.error('error', err)
-}, () => {
-  console.log('Query evaluation complete!')
-})
-
-</script>
-
--->

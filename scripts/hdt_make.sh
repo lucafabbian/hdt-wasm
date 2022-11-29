@@ -1,4 +1,4 @@
-#!/bin/bash
+c#!/bin/bash
 cd "$(dirname "$0")"
 
 cd ../deps_src/hdt-cpp
