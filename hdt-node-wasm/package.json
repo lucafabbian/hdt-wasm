@@ -1,0 +1,20 @@
+{
+  "name": "hdt-node-wasm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^23.0.3",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "n3": "^0.11.3",
+    "rollup": "^3.5.0",
+    "rollup-plugin-polyfill-node": "^0.11.0",
+    "sparql-engine": "^0.6.0"
+  }
+}

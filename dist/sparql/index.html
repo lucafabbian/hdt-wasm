@@ -17,24 +17,13 @@
   <p>This simple page will let you use sparql on a predefined hdt file about museums taken from <a href="./padovagrandtour.hdt">here</a>.</p>
   <p>Keep in mind that query-engine supports just a subset of sparql properly. For example, the BIND operator does not works as expected.</p>
   <button onclick="executeQuery()">Execute query</button>
-  <textarea id="codeEditor">
-PREFIX pgt: <https://padovagrandtour.github.io/entities#> 
-PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-
-SELECT ?artwork ?site ?lat ?long
-WHERE {
-  ?artwork a pgt:Artwork .
-  ?artwork pgt:hasSite ?site.
-  ?site geo:lat ?lat;
-        geo:long ?long.
-} LIMIT 20
-</textarea>
+  <div id="codeEditor"></div>
   <h2>Query results:</h2>
   <p id="output"></p>
 
 <script src="codemirror5/codemirror.js"></script>
 <script src="codemirror5/sparql.js"></script>
-<script src="./sparqlEngine.js"></script>
+<script src="./sparqlEngine6.js"></script>
 <script src="./a.out.js"></script>
 <script>
 
@@ -57,11 +46,26 @@ WHERE {
     }
   }
 
-  const codeEditor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+  const defaultQuery  = `
+PREFIX pgt: <https://padovagrandtour.github.io/entities#> 
+PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+
+SELECT ?artwork ?site ?lat ?long
+WHERE {
+  ?artwork a pgt:Artwork .
+  ?artwork pgt:hasSite ?site.
+  ?site geo:lat ?lat;
+        geo:long ?long.
+} LIMIT 20
+`
+
+  const codeEditor = CodeMirror(document.getElementById('codeEditor'), {
     lineNumbers: true,
+    value: localStorage['hdt-sparql-demo-query'] || defaultQuery.trim(),
     mode:  "sparql"
   });
 
+  codeEditor.on("change", ()=> localStorage['hdt-sparql-demo-query'] = codeEditor.getValue())
 
 
   const { HashMapDataset, Graph, PlanBuilder } = sparqlEngine
@@ -79,11 +83,14 @@ WHERE {
 
       find (triple) {
         const { subject, predicate, object } = triple
+        console.log(subject, predicate, object)
         window.queryMatches = []
 
+        console.log("running")
         Module.ccall('search', null, ['string', 'string', 'string'], [
           formatTripleValue(subject), formatTripleValue(predicate), formatTripleValue(object)
         ]);
+        console.log("runningEnded")
 
         return window.queryMatches
       }
@@ -145,12 +152,12 @@ WHERE {
     iterator.subscribe(bindings => {
       const result = bindings.toObject()
       for ([label, value] of Object.entries(result)){
-        console.log(label, value)
+        //console.log(label, value)
         if(printedResults < MAX_LIMIT){
           document.getElementById('output').innerHTML += `<b>${label}</b> ${value.replaceAll('<','&lt;').replaceAll('>', '&gt;')}<br>`  
         }
       }
-      console.log('-----')
+      //console.log('-----')
       printedResults++;
 
       if(printedResults < MAX_LIMIT){
