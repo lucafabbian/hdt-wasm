@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 cd ../deps_src/zlib
 
 emconfigure ./configure
-emmake make LDFLAGS=-all-static
+emmake make CPPFLAGS+="-fexceptions" LDFLAGS="-all-static"
 
 
 
