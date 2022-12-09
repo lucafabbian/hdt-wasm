@@ -1,10 +1,10 @@
 #!/bin/bash
 cd "$(dirname "$0")"
+cd ..
+export CPATH="$CPATH:$PWD/deps_src/zlib"
 
-cd ../deps_src/hdt-cpp
 
-
-
+cd ./deps_src/hdt-cpp
 emmake make CPPFLAGS+="-fexceptions" LDFLAGS="-all-static"
 
 

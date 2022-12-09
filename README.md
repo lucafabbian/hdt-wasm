@@ -4,18 +4,32 @@ Wasm port of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library to allow i
 
 ## Status
 The project is nowhere close to a production-ready build with a stable api.
-Yet, it is already able to compile with no major issue and run a demo!
+Yet, it is already able to compile with no major issue and run some demos!
 
-Check it here: [https://lucafabbian.github.io/hdt-wasm/dist/converter](https://lucafabbian.github.io/hdt-wasm/dist/converter)
+Check the demos here:
+ - a turtle (ttl) to HDT converter: [https://lucafabbian.github.io/hdt-wasm/dist/converter](https://lucafabbian.github.io/hdt-wasm/dist/converter)
+ - a sparql query over HDT playground: [https://lucafabbian.github.io/hdt-wasm/dist/sparql](https://lucafabbian.github.io/hdt-wasm/dist/sparql)
 
 
 
 
 ## Getting started
 
+### With Docker
+You find a Dockerfile with all dependencies already preconfigured. Just build it and run it with:
+```bash
+docker build -t hdt_emscripten .
+docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) hdt_emscripten bash build.sh
+```
+
+
+### Without Docker
+(tested on Ubuntu 22.04)
+
 Be sure to have [Node.js](https://nodejs.org/en/download/) and [emscripten](https://emscripten.org/docs/getting_started/downloads.html) on your system (test with `em++ --version`). Do not use the ones from Ubuntu repos, they are outdated.
 
-The dependencies below are required too:
+
+You also need the following dependencies:
 ```bash
 sudo apt-get install git autoconf libtool pkg-config
 ```
@@ -24,15 +38,10 @@ Build with:
 ```bash
 # clone deps, rebuild and link them 
 ./build.sh
-
-# build demo
-bash scripts/converter_build.sh
-
 ```
 
-## Known issues and patches
-- wasm do no plays well with C++ exception. Thus, instead of relying on try/catch to handle non-existing keys in std::map, we use map.count(). This patch should not break anything, and neither have any relevant performance impact, since it's just a log(n) call performed once during setup.
-- wasm has a different pointer size (size_t) than common architectures, thus a cast is mandatory. I'm not sure if it safe or if I'm doing it the right way, so I've chosen to add a stderr print everytime such cast are used, to help further debugging.
+## What's next?
+The main goal now is to provide a real binding to the WebAssembly file and distribute it as a npm package.
 
 
 
