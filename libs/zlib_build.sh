@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-cd ../deps_src/zlib
+cd ./deps_src/zlib
 
 emconfigure ./configure
 emmake make CPPFLAGS+="-fexceptions" LDFLAGS="-all-static"

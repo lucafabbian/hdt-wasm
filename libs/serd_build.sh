@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-cd ../deps_src/serd
+cd ./deps_src/serd
 
 
 # Build serd files

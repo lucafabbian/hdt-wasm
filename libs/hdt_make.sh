@@ -1,6 +1,5 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-cd ..
 export CPATH="$CPATH:$PWD/deps_src/zlib"
 
 

@@ -1,7 +1,6 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-cd ..
 
 mkdir -p ./deps_src
 cd ./deps_src

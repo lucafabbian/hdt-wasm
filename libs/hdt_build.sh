@@ -1,6 +1,5 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-cd ..
 
 
 # Run configure
@@ -42,4 +41,4 @@ Cflags: -I${includedir}' >>  ./deps_compiled/pkgs/cds.pc
 
 
 # Call make
-bash ./scripts/hdt_make.sh
+bash ./hdt_make.sh

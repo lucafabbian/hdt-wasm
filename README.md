@@ -7,8 +7,8 @@ The project is nowhere close to a production-ready build with a stable api.
 Yet, it is already able to compile with no major issue and run some demos!
 
 Check the demos here:
- - a turtle (ttl) to HDT converter: [https://lucafabbian.github.io/hdt-wasm/dist/converter](https://lucafabbian.github.io/hdt-wasm/dist/converter)
- - a sparql query over HDT playground: [https://lucafabbian.github.io/hdt-wasm/dist/sparql](https://lucafabbian.github.io/hdt-wasm/dist/sparql)
+ - a turtle (ttl) to HDT converter: [https://lucafabbian.github.io/hdt-wasm/demo-converter/dist](https://lucafabbian.github.io/hdt-wasm/demo-converter/dist)
+ - a sparql query over HDT playground: [https://lucafabbian.github.io/hdt-wasm/demo-sparql/dist](https://lucafabbian.github.io/hdt-wasm/demo-sparql/dist)
 
 
 
